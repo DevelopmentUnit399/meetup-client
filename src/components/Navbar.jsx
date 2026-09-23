@@ -1,15 +1,19 @@
 import React from 'react'
-import { dummyUser } from '../assets/asset'
 import { Link, useLocation } from 'react-router-dom'
 import { AstroidIcon, HistoryIcon, LayoutDashboardIcon } from 'lucide-react'
-import { UserButton } from '@clerk/react'
+import { UserButton, useUser, SignInButton } from '@clerk/react'
 
 const Navbar = () => {
-
-    const { isSignedIn, user } = { user: dummyUser, isSignedIn: true }
+    // 1. Get real Clerk user state
+    const { isSignedIn, user, isLoaded } = useUser()
     const location = useLocation()
 
-    const userName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress.split("@")[0] || "user"
+    // 2. Extract user name safely once loaded
+    const userName = 
+        user?.fullName || 
+        user?.firstName || 
+        user?.primaryEmailAddress?.emailAddress?.split("@")[0] || 
+        "user"
 
     return (
         <div>
@@ -23,7 +27,8 @@ const Navbar = () => {
                         </span>
                     </Link>
 
-                    {isSignedIn && (
+                    {/* Show navigation links only when signed in */}
+                    {isLoaded && isSignedIn && (
                         <nav className="hidden md:flex items-center gap-1.5 ml-2">
                             <Link to="/dashboard"
                                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${location.pathname === '/dashboard'
@@ -59,19 +64,30 @@ const Navbar = () => {
                 </div>
 
                 {/* Right Profile / UserButton */}
-                {isSignedIn && (
-                    <div className="flex items-center gap-4">
-                        <Link to="/sessions" className="md:hidden text-xs font-medium text-slate-600 hover:text-primary flex items-center gap-1">
-                            <HistoryIcon className="w-4 h-4" />
-                            Sessions
-                        </Link>
-                        <span className="font-medium hidden sm:inline tracking-wide text-sm text-slate-700">Welcome, {userName}</span>
+                <div className="flex items-center gap-4">
+                    {!isLoaded ? (
+                        <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse" />
+                    ) : isSignedIn ? (
+                        <>
+                            <Link to="/sessions" className="md:hidden text-xs font-medium text-slate-600 hover:text-primary flex items-center gap-1">
+                                <HistoryIcon className="w-4 h-4" />
+                                Sessions
+                            </Link>
+                            
+                            <span className="font-medium hidden sm:inline tracking-wide text-sm text-slate-700">
+                                Welcome, {userName}
+                            </span>
 
-                        <UserButton afterSignOutUrl="/login" />
-                    </div>
-                )
-
-                }
+                            <UserButton />
+                        </>
+                    ) : (
+                        <SignInButton mode="modal">
+                            <button className="px-4 py-2 rounded-full text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors">
+                                Sign In
+                            </button>
+                        </SignInButton>
+                    )}
+                </div>
 
             </header>
         </div>
