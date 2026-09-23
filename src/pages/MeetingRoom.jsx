@@ -7,6 +7,7 @@ import ChatPanel from '../components/meeting/ChatPanel'
 import { useChat } from '../hooks/UseChat'
 import ParticipantList from '../components/meeting/ParticipantList'
 import ControlBar from '../components/meeting/ControlBar'
+import toast from 'react-hot-toast'
 
 const MeetingRoom = () => {
 
